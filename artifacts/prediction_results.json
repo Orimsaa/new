@@ -1,0 +1,212 @@
+[
+  {
+    "predicted_class": "sunny",
+    "confidence": 0.6280890703201294,
+    "all_probabilities": {
+      "cloudy": 0.35985586047172546,
+      "foggy": 0.0018069117795675993,
+      "rainy": 0.0021063261665403843,
+      "snowy": 0.008141831494867802,
+      "sunny": 0.6280890703201294
+    },
+    "image_path": "C:\\projectML\\weather_classification_mlops\\artifacts\\processed_data\\organized\\test\\cloudy\\10441247_000752.jpg",
+    "actual_class": "cloudy",
+    "is_correct": false
+  },
+  {
+    "predicted_class": "sunny",
+    "confidence": 0.5424920916557312,
+    "all_probabilities": {
+      "cloudy": 0.4184536933898926,
+      "foggy": 0.0013345055049285293,
+      "rainy": 0.025168320164084435,
+      "snowy": 0.012551491148769855,
+      "sunny": 0.5424920916557312
+    },
+    "image_path": "C:\\projectML\\weather_classification_mlops\\artifacts\\processed_data\\organized\\test\\cloudy\\10441367_002613.jpg",
+    "actual_class": "cloudy",
+    "is_correct": false
+  },
+  {
+    "predicted_class": "sunny",
+    "confidence": 0.6173256039619446,
+    "all_probabilities": {
+      "cloudy": 0.2766835391521454,
+      "foggy": 0.0006546616205014288,
+      "rainy": 0.10348106920719147,
+      "snowy": 0.0018550948007032275,
+      "sunny": 0.6173256039619446
+    },
+    "image_path": "C:\\projectML\\weather_classification_mlops\\artifacts\\processed_data\\organized\\test\\cloudy\\10441428_000536.jpg",
+    "actual_class": "cloudy",
+    "is_correct": false
+  },
+  {
+    "predicted_class": "foggy",
+    "confidence": 0.9062104225158691,
+    "all_probabilities": {
+      "cloudy": 0.03909718245267868,
+      "foggy": 0.9062104225158691,
+      "rainy": 0.02078605256974697,
+      "snowy": 0.027929719537496567,
+      "sunny": 0.005976555403321981
+    },
+    "image_path": "C:\\projectML\\weather_classification_mlops\\artifacts\\processed_data\\organized\\test\\foggy\\100_001850.jpg",
+    "actual_class": "foggy",
+    "is_correct": true
+  },
+  {
+    "predicted_class": "foggy",
+    "confidence": 0.9991596937179565,
+    "all_probabilities": {
+      "cloudy": 0.00033406857983209193,
+      "foggy": 0.9991596937179565,
+      "rainy": 0.0003624290693551302,
+      "snowy": 0.00010058049520011991,
+      "sunny": 4.3277661461615935e-05
+    },
+    "image_path": "C:\\projectML\\weather_classification_mlops\\artifacts\\processed_data\\organized\\test\\foggy\\102_000126.jpg",
+    "actual_class": "foggy",
+    "is_correct": true
+  },
+  {
+    "predicted_class": "foggy",
+    "confidence": 0.9999055862426758,
+    "all_probabilities": {
+      "cloudy": 6.925105844857171e-05,
+      "foggy": 0.9999055862426758,
+      "rainy": 1.1998824447800871e-05,
+      "snowy": 8.989224625111092e-06,
+      "sunny": 4.146734227106208e-06
+    },
+    "image_path": "C:\\projectML\\weather_classification_mlops\\artifacts\\processed_data\\organized\\test\\foggy\\111_001840.jpg",
+    "actual_class": "foggy",
+    "is_correct": true
+  },
+  {
+    "predicted_class": "rainy",
+    "confidence": 0.9978238344192505,
+    "all_probabilities": {
+      "cloudy": 0.0006562224007211626,
+      "foggy": 0.0005761100910604,
+      "rainy": 0.9978238344192505,
+      "snowy": 0.0006372167845256627,
+      "sunny": 0.00030662791687063873
+    },
+    "image_path": "C:\\projectML\\weather_classification_mlops\\artifacts\\processed_data\\organized\\test\\rainy\\1011_000159.jpg",
+    "actual_class": "rainy",
+    "is_correct": true
+  },
+  {
+    "predicted_class": "rainy",
+    "confidence": 0.9995960593223572,
+    "all_probabilities": {
+      "cloudy": 4.3956450213045173e-07,
+      "foggy": 4.8969361898798525e-08,
+      "rainy": 0.9995960593223572,
+      "snowy": 0.00040343921864405274,
+      "sunny": 2.2740012539657073e-08
+    },
+    "image_path": "C:\\projectML\\weather_classification_mlops\\artifacts\\processed_data\\organized\\test\\rainy\\1053_002323.jpg",
+    "actual_class": "rainy",
+    "is_correct": true
+  },
+  {
+    "predicted_class": "rainy",
+    "confidence": 0.7046447992324829,
+    "all_probabilities": {
+      "cloudy": 0.008952608332037926,
+      "foggy": 0.012488334439694881,
+      "rainy": 0.7046447992324829,
+      "snowy": 0.2729784846305847,
+      "sunny": 0.0009357893723063171
+    },
+    "image_path": "C:\\projectML\\weather_classification_mlops\\artifacts\\processed_data\\organized\\test\\rainy\\1058_001963.jpg",
+    "actual_class": "rainy",
+    "is_correct": true
+  },
+  {
+    "predicted_class": "snowy",
+    "confidence": 0.8100302815437317,
+    "all_probabilities": {
+      "cloudy": 0.03756524994969368,
+      "foggy": 0.045920778065919876,
+      "rainy": 0.10260201245546341,
+      "snowy": 0.8100302815437317,
+      "sunny": 0.003881668671965599
+    },
+    "image_path": "C:\\projectML\\weather_classification_mlops\\artifacts\\processed_data\\organized\\test\\snowy\\0841_003127.jpg",
+    "actual_class": "snowy",
+    "is_correct": true
+  },
+  {
+    "predicted_class": "snowy",
+    "confidence": 0.9846790432929993,
+    "all_probabilities": {
+      "cloudy": 0.00019447080558165908,
+      "foggy": 0.00022248354798648506,
+      "rainy": 0.014888811856508255,
+      "snowy": 0.9846790432929993,
+      "sunny": 1.5127162441785913e-05
+    },
+    "image_path": "C:\\projectML\\weather_classification_mlops\\artifacts\\processed_data\\organized\\test\\snowy\\0852_001140.jpg",
+    "actual_class": "snowy",
+    "is_correct": true
+  },
+  {
+    "predicted_class": "snowy",
+    "confidence": 0.9931360483169556,
+    "all_probabilities": {
+      "cloudy": 0.004620454274117947,
+      "foggy": 6.471450615208596e-05,
+      "rainy": 0.0009812263306230307,
+      "snowy": 0.9931360483169556,
+      "sunny": 0.0011975844390690327
+    },
+    "image_path": "C:\\projectML\\weather_classification_mlops\\artifacts\\processed_data\\organized\\test\\snowy\\0853_000186.jpg",
+    "actual_class": "snowy",
+    "is_correct": true
+  },
+  {
+    "predicted_class": "rainy",
+    "confidence": 0.47468501329421997,
+    "all_probabilities": {
+      "cloudy": 0.3033454418182373,
+      "foggy": 0.011645815335214138,
+      "rainy": 0.47468501329421997,
+      "snowy": 0.11513786762952805,
+      "sunny": 0.09518584609031677
+    },
+    "image_path": "C:\\projectML\\weather_classification_mlops\\artifacts\\processed_data\\organized\\test\\sunny\\10740596_000725.jpg",
+    "actual_class": "sunny",
+    "is_correct": false
+  },
+  {
+    "predicted_class": "sunny",
+    "confidence": 0.8321340680122375,
+    "all_probabilities": {
+      "cloudy": 0.09882029891014099,
+      "foggy": 0.001042822957970202,
+      "rainy": 0.01605192944407463,
+      "snowy": 0.05195086449384689,
+      "sunny": 0.8321340680122375
+    },
+    "image_path": "C:\\projectML\\weather_classification_mlops\\artifacts\\processed_data\\organized\\test\\sunny\\11077783_000278.jpg",
+    "actual_class": "sunny",
+    "is_correct": true
+  },
+  {
+    "predicted_class": "sunny",
+    "confidence": 0.7034832835197449,
+    "all_probabilities": {
+      "cloudy": 0.21833303570747375,
+      "foggy": 0.03980658948421478,
+      "rainy": 0.02096818946301937,
+      "snowy": 0.017408940941095352,
+      "sunny": 0.7034832835197449
+    },
+    "image_path": "C:\\projectML\\weather_classification_mlops\\artifacts\\processed_data\\organized\\test\\sunny\\11367241_000132.jpg",
+    "actual_class": "sunny",
+    "is_correct": true
+  }
+]

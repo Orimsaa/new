@@ -1,0 +1,12 @@
+=== DATA VALIDATION REPORT ===
+Total Images: 18038
+Valid Images: 18029
+Classes Found: 5
+Dataset Balanced: False
+⚠️  Corrupted Images: 4
+⚠️  Invalid Size Images: 5
+
+📋 Recommendations:
+  - Dataset is imbalanced (ratio: 5.32:1)
+  - Consider data augmentation for underrepresented classes
+  - Or use stratified sampling during train/test split

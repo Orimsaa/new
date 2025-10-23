@@ -1,0 +1,16 @@
+=== DATA PREPROCESSING REPORT ===
+Total Samples: 16673
+Target Image Size: (224, 224)
+Number of Classes: 5
+
+Data Splits:
+  TRAIN: 11670 samples (69.99%)
+  VAL: 1668 samples (10.0%)
+  TEST: 3335 samples (20.0%)
+
+Class Distribution:
+  cloudy: 6402 samples (38.4%)
+  foggy: 1010 samples (6.1%)
+  rainy: 1661 samples (10.0%)
+  snowy: 1583 samples (9.5%)
+  sunny: 6017 samples (36.1%)

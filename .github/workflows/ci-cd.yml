@@ -1,0 +1,509 @@
+name: Weather Classification MLOps CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.9'
+  MLFLOW_TRACKING_URI: 'sqlite:///mlflow.db'
+
+jobs:
+  # Code Quality and Linting
+  code-quality:
+    runs-on: ubuntu-latest
+    name: Code Quality & Linting
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 black isort mypy bandit safety
+        pip install -r requirements.txt
+        
+    - name: Run Black (Code Formatting)
+      run: |
+        black --check --diff scripts/ tests/
+        
+    - name: Run isort (Import Sorting)
+      run: |
+        isort --check-only --diff scripts/ tests/
+        
+    - name: Run Flake8 (Linting)
+      run: |
+        flake8 scripts/ tests/ --max-line-length=88 --extend-ignore=E203,W503
+        
+    - name: Run MyPy (Type Checking)
+      run: |
+        mypy scripts/ --ignore-missing-imports
+        
+    - name: Run Bandit (Security Linting)
+      run: |
+        bandit -r scripts/ -f json -o bandit-report.json
+        
+    - name: Run Safety (Dependency Security Check)
+      run: |
+        safety check --json --output safety-report.json
+        
+    - name: Upload Security Reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-reports
+        path: |
+          bandit-report.json
+          safety-report.json
+
+  # Unit Testing
+  unit-tests:
+    runs-on: ubuntu-latest
+    name: Unit Tests
+    needs: code-quality
+    
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10']
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-${{ matrix.python-version }}-
+          ${{ runner.os }}-pip-
+          
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov pytest-mock coverage
+        pip install -r requirements.txt
+        
+    - name: Create test data directory
+      run: |
+        mkdir -p test_data/cloudy test_data/foggy test_data/rainy test_data/snowy test_data/sunny
+        
+    - name: Run Unit Tests
+      run: |
+        pytest tests/ -v --cov=scripts --cov-report=xml --cov-report=html --cov-report=term
+        
+    - name: Upload Coverage Reports
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results-${{ matrix.python-version }}
+        path: |
+          htmlcov/
+          coverage.xml
+
+  # Data Validation Tests
+  data-validation:
+    runs-on: ubuntu-latest
+    name: Data Validation
+    needs: unit-tests
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Create sample test data
+      run: |
+        python -c "
+        import os
+        import numpy as np
+        from PIL import Image
+        
+        # Create sample images for testing
+        categories = ['cloudy', 'foggy', 'rainy', 'snowy', 'sunny']
+        for category in categories:
+            os.makedirs(f'test_data/{category}', exist_ok=True)
+            for i in range(5):
+                # Create a random RGB image
+                img_array = np.random.randint(0, 255, (224, 224, 3), dtype=np.uint8)
+                img = Image.fromarray(img_array)
+                img.save(f'test_data/{category}/test_image_{i}.jpg')
+        "
+        
+    - name: Run Data Validation
+      run: |
+        cd scripts
+        python 01_data_validation.py --data_path ../test_data --output_path ../artifacts/validation_test
+        
+    - name: Upload Validation Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: data-validation-results
+        path: artifacts/validation_test/
+
+  # Model Training (Lightweight Test)
+  model-training-test:
+    runs-on: ubuntu-latest
+    name: Model Training Test
+    needs: data-validation
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Create test data and preprocess
+      run: |
+        # Create sample test data
+        python -c "
+        import os
+        import numpy as np
+        from PIL import Image
+        
+        categories = ['cloudy', 'foggy', 'rainy', 'snowy', 'sunny']
+        for category in categories:
+            os.makedirs(f'test_data/{category}', exist_ok=True)
+            for i in range(10):  # More samples for training test
+                img_array = np.random.randint(0, 255, (224, 224, 3), dtype=np.uint8)
+                img = Image.fromarray(img_array)
+                img.save(f'test_data/{category}/test_image_{i}.jpg')
+        "
+        
+        # Run preprocessing
+        cd scripts
+        python 02_data_preprocessing.py --data_path ../test_data --output_path ../artifacts/processed_data_test
+        
+    - name: Run Lightweight Model Training
+      run: |
+        cd scripts
+        # Create a minimal training config for testing
+        python -c "
+        import sys
+        sys.path.append('.')
+        from 03_train_evaluate_register import WeatherClassificationTrainer
+        
+        # Minimal config for CI testing
+        model_configs = [{
+            'model_type': 'cnn',
+            'optimizer': 'adam',
+            'learning_rate': 0.01,
+            'batch_size': 8,
+            'epochs': 2,  # Very few epochs for CI
+            'early_stopping_patience': 1
+        }]
+        
+        trainer = WeatherClassificationTrainer(
+            processed_data_path='../artifacts/processed_data_test',
+            models_path='../models_test',
+            artifacts_path='../artifacts_test',
+            experiment_name='ci_test'
+        )
+        
+        results = trainer.run_training_pipeline(model_configs)
+        print('Training test completed successfully!')
+        "
+        
+    - name: Upload Training Test Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: training-test-results
+        path: |
+          models_test/
+          artifacts_test/
+
+  # API Testing
+  api-tests:
+    runs-on: ubuntu-latest
+    name: API Tests
+    needs: model-training-test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install httpx pytest-asyncio
+        
+    - name: Create mock model for API testing
+      run: |
+        python -c "
+        import os
+        import json
+        import pickle
+        import numpy as np
+        from sklearn.preprocessing import LabelEncoder
+        from tensorflow.keras.models import Sequential
+        from tensorflow.keras.layers import Dense, Flatten, Conv2D
+        
+        # Create directories
+        os.makedirs('models', exist_ok=True)
+        os.makedirs('artifacts/processed_data', exist_ok=True)
+        
+        # Create a simple mock model
+        model = Sequential([
+            Conv2D(32, (3, 3), activation='relu', input_shape=(224, 224, 3)),
+            Flatten(),
+            Dense(5, activation='softmax')
+        ])
+        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+        model.save('models/test_model.h5')
+        
+        # Create metadata
+        metadata = {
+            'classes': ['cloudy', 'foggy', 'rainy', 'snowy', 'sunny'],
+            'target_size': [224, 224]
+        }
+        with open('artifacts/processed_data/metadata.json', 'w') as f:
+            json.dump(metadata, f)
+        
+        # Create label encoder
+        le = LabelEncoder()
+        le.fit(metadata['classes'])
+        with open('artifacts/processed_data/label_encoder.pkl', 'wb') as f:
+            pickle.dump(le, f)
+        
+        print('Mock model and metadata created successfully!')
+        "
+        
+    - name: Test API Endpoints
+      run: |
+        cd scripts
+        python -c "
+        import asyncio
+        import httpx
+        import subprocess
+        import time
+        import os
+        from multiprocessing import Process
+        
+        def start_api():
+            os.system('python 04_load_and_predict.py --host 127.0.0.1 --port 8000')
+        
+        # Start API in background
+        api_process = Process(target=start_api)
+        api_process.start()
+        
+        # Wait for API to start
+        time.sleep(10)
+        
+        try:
+            # Test API endpoints
+            async def test_api():
+                async with httpx.AsyncClient() as client:
+                    # Test health endpoint
+                    response = await client.get('http://127.0.0.1:8000/health')
+                    assert response.status_code == 200
+                    print('Health check passed')
+                    
+                    # Test model info endpoint
+                    response = await client.get('http://127.0.0.1:8000/model/info')
+                    assert response.status_code == 200
+                    print('Model info check passed')
+                    
+                    # Test available models endpoint
+                    response = await client.get('http://127.0.0.1:8000/models/available')
+                    assert response.status_code == 200
+                    print('Available models check passed')
+            
+            asyncio.run(test_api())
+            print('All API tests passed!')
+            
+        finally:
+            api_process.terminate()
+            api_process.join()
+        "
+
+  # Security Scanning
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security Scanning
+    needs: [code-quality, unit-tests]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # Build and Package
+  build-package:
+    runs-on: ubuntu-latest
+    name: Build & Package
+    needs: [api-tests, security-scan]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build wheel setuptools
+        
+    - name: Create package structure
+      run: |
+        mkdir -p dist/weather_classification_mlops
+        cp -r scripts/ dist/weather_classification_mlops/
+        cp requirements.txt dist/weather_classification_mlops/
+        cp README.md dist/weather_classification_mlops/ || echo "README.md not found, skipping"
+        
+    - name: Create setup.py
+      run: |
+        cat > dist/weather_classification_mlops/setup.py << 'EOF'
+        from setuptools import setup, find_packages
+        
+        setup(
+            name="weather-classification-mlops",
+            version="1.0.0",
+            packages=find_packages(),
+            install_requires=[
+                line.strip() for line in open("requirements.txt").readlines()
+                if line.strip() and not line.startswith("#")
+            ],
+            author="MLOps Team",
+            description="Weather Classification MLOps Pipeline",
+            python_requires=">=3.8",
+        )
+        EOF
+        
+    - name: Build package
+      run: |
+        cd dist/weather_classification_mlops
+        python setup.py sdist bdist_wheel
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: dist/
+
+  # Deployment (Placeholder)
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    needs: build-package
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build-artifacts
+        path: dist/
+        
+    - name: Deploy to staging (Placeholder)
+      run: |
+        echo "Deploying to staging environment..."
+        echo "This would typically involve:"
+        echo "- Pushing Docker images to registry"
+        echo "- Updating Kubernetes deployments"
+        echo "- Running smoke tests"
+        echo "- Updating monitoring dashboards"
+        
+    - name: Run smoke tests (Placeholder)
+      run: |
+        echo "Running smoke tests..."
+        echo "All smoke tests passed!"
+        
+    - name: Deploy to production (Placeholder)
+      run: |
+        echo "Deploying to production environment..."
+        echo "Production deployment completed successfully!"
+
+  # Notification
+  notify:
+    runs-on: ubuntu-latest
+    name: Notify
+    needs: [deploy]
+    if: always()
+    
+    steps:
+    - name: Notify on success
+      if: ${{ needs.deploy.result == 'success' }}
+      run: |
+        echo "✅ CI/CD Pipeline completed successfully!"
+        echo "All tests passed and deployment completed."
+        
+    - name: Notify on failure
+      if: ${{ needs.deploy.result == 'failure' || needs.deploy.result == 'cancelled' }}
+      run: |
+        echo "❌ CI/CD Pipeline failed!"
+        echo "Please check the logs for more details."

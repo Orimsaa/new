@@ -1,0 +1,48 @@
+# Large data files and artifacts
+artifacts/processed_data/
+artifacts/raw_data/
+*.npy
+*.pkl
+*.h5
+*.hdf5
+
+# MLflow artifacts
+mlruns/
+mlflow.db
+
+# Model files
+models/*.h5
+models/*.pkl
+models/*.joblib
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
