@@ -46,7 +46,7 @@ jobs:
         
     - name: Run isort (Import Sorting)
       run: |
-        isort --check-only --diff scripts/
+        isort --profile black --check-only --diff scripts/
         
     - name: Run Flake8 (Linting)
       run: |
