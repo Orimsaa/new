@@ -25,51 +25,47 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r weather_classification_mlops/requirements.txt
+          pip install -r requirements.txt
           pip install flake8
 
       - name: Lint (flake8)
         run: |
-          flake8 weather_classification_mlops --max-line-length=120 --exclude .venv,.git,__pycache__
+          flake8 . --max-line-length=120 --exclude .venv,.git,__pycache__,mlruns
 
       - name: Prepare synthetic dataset for CI
         run: |
-          python scripts/00_prepare_dataset.py --output_dir ../artifacts/raw_dataset --images_per_class 20 --img_size 128
-        working-directory: weather_classification_mlops
+          python scripts/00_prepare_dataset.py --output_dir artifacts/raw_dataset --images_per_class 20 --img_size 128
 
       - name: Run Data Validation
         run: |
-          python scripts/01_data_validation.py --data_path ../artifacts/raw_dataset --output_path ../artifacts
-        working-directory: weather_classification_mlops
+          python scripts/01_data_validation.py --data_path artifacts/raw_dataset --output_path artifacts
 
       - name: Run Data Preprocessing
         id: preprocessing
         run: |
-          python scripts/02_data_preprocessing.py --data_path ../artifacts/raw_dataset --output_path ../artifacts/processed_data --target_size 128 128
-        working-directory: weather_classification_mlops
+          python scripts/02_data_preprocessing.py --data_path artifacts/raw_dataset --output_path artifacts/processed_data --target_size 128 128
 
       - name: Train (epochs=3, models=cnn)
         run: |
-          python scripts/03_train_evaluate_register.py --processed_data_path ../artifacts/processed_data --models_path ../models --artifacts_path ../artifacts --experiment_name CI-Pipeline --epochs 3 --models cnn
-        working-directory: weather_classification_mlops
+          python scripts/03_train_evaluate_register.py --processed_data_path artifacts/processed_data --models_path models --artifacts_path artifacts --experiment_name CI-Pipeline --epochs 3 --models cnn
 
       - name: Upload models
         uses: actions/upload-artifact@v4
         with:
           name: models
-          path: weather_classification_mlops/models/
+          path: models/
           if-no-files-found: warn
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: artifacts
-          path: weather_classification_mlops/artifacts/
+          path: artifacts/
           if-no-files-found: warn
 
       - name: Upload MLflow runs
         uses: actions/upload-artifact@v4
         with:
           name: mlruns
-          path: weather_classification_mlops/mlruns/
+          path: mlruns/
           if-no-files-found: warn
