@@ -10,6 +10,7 @@ from typing import Dict
 import cv2
 import mlflow
 import numpy as np
+import os
 from loguru import logger
 
 
@@ -318,6 +319,25 @@ class DataValidator:
             return complete_results
 
 
+# เพิ่มตัวช่วยแก้พาธข้อมูลให้ทนทานต่อ working directory
+def resolve_data_path(cand: str) -> Path:
+    p = Path(cand)
+    script_dir = Path(__file__).resolve().parent
+    candidates = [
+        p,
+        Path.cwd() / cand,
+        script_dir / cand,
+        script_dir.parent / cand,
+        script_dir.parent.parent / cand,
+    ]
+    for c in candidates:
+        if c.exists():
+            return c
+    env = os.environ.get("DATA_PATH")
+    if env and Path(env).exists():
+        return Path(env)
+    return p
+
 def main():
     """Main function to run data validation with MLflow tracking"""
     import argparse
@@ -344,12 +364,17 @@ def main():
         logger.info("Starting weather data validation run...")
         mlflow.set_tag("ml.step", "data_validation")
 
+        # Resolve data_path ให้ทำงานได้จากหลายตำแหน่ง
+        resolved_data_path = resolve_data_path(args.data_path)
+        if Path(args.data_path) != resolved_data_path:
+            logger.info(f"Resolved data_path to: {resolved_data_path}")
+
         # Initialize and run validator
-        validator = DataValidator(args.data_path, args.output_path)
+        validator = DataValidator(str(resolved_data_path), args.output_path)
         results = validator.run_validation()
 
         # Log parameters
-        mlflow.log_param("data_path", args.data_path)
+        mlflow.log_param("data_path", str(resolved_data_path))
         mlflow.log_param("expected_classes", len(validator.expected_classes))
         mlflow.log_param("min_image_size", validator.min_image_size)
         mlflow.log_param("supported_formats", validator.supported_formats)
