@@ -298,9 +298,13 @@ class DataValidator:
             mlflow.log_metric(
                 "classes_found", len(structure_results["expected_classes_found"])
             )
-            mlflow.log_metric(
-                "imbalance_ratio", balance_results.get("imbalance_ratio", 0)
-            )
+            # Safe log: ensure imbalance_ratio is a finite float
+            imbalance = balance_results.get("imbalance_ratio")
+            if imbalance is None or (
+                isinstance(imbalance, float) and not np.isfinite(imbalance)
+            ):
+                imbalance = 0.0
+            mlflow.log_metric("imbalance_ratio", float(imbalance))
             mlflow.log_param("data_path", str(self.data_path))
 
             # Generate and log report
