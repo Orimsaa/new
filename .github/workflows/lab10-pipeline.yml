@@ -34,7 +34,7 @@ jobs:
 
       - name: Prepare synthetic dataset for CI
         run: |
-          python scripts/00_prepare_dataset.py --output_dir artifacts/raw_dataset --images_per_class 20 --img_size 128
+          python scripts/00_prepare_dataset.py --data_path artifacts/raw_dataset --target_size 128 128 --images_per_class 20
 
       - name: Run Data Validation
         run: |
