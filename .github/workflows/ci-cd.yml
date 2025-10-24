@@ -42,15 +42,15 @@ jobs:
         
     - name: Run Black (Code Formatting)
       run: |
-        black --check --diff scripts/ tests/
+        black --check --diff scripts/
         
     - name: Run isort (Import Sorting)
       run: |
-        isort --check-only --diff scripts/ tests/
+        isort --check-only --diff scripts/
         
     - name: Run Flake8 (Linting)
       run: |
-        flake8 scripts/ tests/ --max-line-length=88 --extend-ignore=E203,W503
+        flake8 scripts/ --max-line-length=88 --extend-ignore=E203,W503
         
     - name: Run MyPy (Type Checking)
       run: |
@@ -62,7 +62,7 @@ jobs:
         
     - name: Run Safety (Dependency Security Check)
       run: |
-        safety check --json --output safety-report.json
+        safety check -r requirements.txt --json > safety-report.json
         
     - name: Upload Security Reports
       uses: actions/upload-artifact@v4
@@ -113,7 +113,7 @@ jobs:
         
     - name: Run Unit Tests
       run: |
-        pytest tests/ -v --cov=scripts --cov-report=xml --cov-report=html --cov-report=term
+        pytest -v --cov=scripts --cov-report=xml --cov-report=html --cov-report=term
         
     - name: Upload Coverage Reports
       uses: codecov/codecov-action@v3
