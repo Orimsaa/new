@@ -617,6 +617,19 @@ def main():
         default="weather_classification",
         help="MLflow experiment name",
     )
+    # CI-friendly overrides
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=None,
+        help="Override epochs for all model configs",
+    )
+    parser.add_argument(
+        "--models",
+        type=str,
+        default=None,
+        help="Comma-separated model types to run (cnn,efficientnet,mobilenet)",
+    )
 
     args = parser.parse_args()
 
@@ -649,6 +662,14 @@ def main():
             "trainable_base": False,
         },
     ]
+
+    # Apply CI-friendly filters/overrides
+    if args.models:
+        wanted = {m.strip() for m in args.models.split(",") if m.strip()}
+        model_configs = [mc for mc in model_configs if mc["model_type"] in wanted]
+    if args.epochs is not None:
+        for mc in model_configs:
+            mc["epochs"] = args.epochs
 
     # Initialize trainer
     trainer = WeatherClassificationTrainer(
