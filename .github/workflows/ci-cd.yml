@@ -65,7 +65,7 @@ jobs:
         safety check --json --output safety-report.json
         
     - name: Upload Security Reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: security-reports
@@ -123,7 +123,7 @@ jobs:
         name: codecov-umbrella
         
     - name: Upload Test Results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: test-results-${{ matrix.python-version }}
@@ -175,7 +175,7 @@ jobs:
         python 01_data_validation.py --data_path ../test_data --output_path ../artifacts/validation_test
         
     - name: Upload Validation Results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: data-validation-results
         path: artifacts/validation_test/
@@ -252,7 +252,7 @@ jobs:
         "
         
     - name: Upload Training Test Results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: training-test-results
         path: |
@@ -446,7 +446,7 @@ jobs:
         python setup.py sdist bdist_wheel
         
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: build-artifacts
         path: dist/
@@ -464,7 +464,7 @@ jobs:
       uses: actions/checkout@v4
       
     - name: Download build artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: build-artifacts
         path: dist/
