@@ -37,6 +37,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      DATA_SOURCE: repo            # 'repo' ใช้ data/ จาก repo, 'synthetic' สร้างใหม่
+      DATA_PATH: data              # ค่าเริ่มต้นชี้ไปที่โฟลเดอร์ data ใน repo
+      TARGET_SIZE_W: 128
+      TARGET_SIZE_H: 128
+      IMAGES_PER_CLASS: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -53,17 +59,26 @@ jobs:
           pip install -r requirements.txt
 
       - name: Prepare synthetic dataset for CI
+        if: ${{ env.DATA_SOURCE == 'synthetic' }}
         run: |
-          python scripts/00_prepare_dataset.py --data_path artifacts/raw_dataset --target_size 128 128 --images_per_class 20
+          python scripts/00_prepare_dataset.py --data_path artifacts/raw_dataset --target_size ${{ env.TARGET_SIZE_W }} ${{ env.TARGET_SIZE_H }} --images_per_class ${{ env.IMAGES_PER_CLASS }}
+
+      - name: Set DATA_PATH for synthetic
+        if: ${{ env.DATA_SOURCE == 'synthetic' }}
+        run: echo "DATA_PATH=artifacts/raw_dataset" >> $GITHUB_ENV
+
+      - name: Set DATA_PATH for repo dataset
+        if: ${{ env.DATA_SOURCE == 'repo' }}
+        run: echo "DATA_PATH=data" >> $GITHUB_ENV
 
       - name: Run Data Validation
         run: |
-          python scripts/01_data_validation.py --data_path artifacts/raw_dataset --output_path artifacts
+          python scripts/01_data_validation.py --data_path ${{ env.DATA_PATH }} --output_path artifacts
 
       - name: Run Data Preprocessing
         id: preprocessing
         run: |
-          python scripts/02_data_preprocessing.py --data_path artifacts/raw_dataset --output_path artifacts/processed_data --target_size 128 128
+          python scripts/02_data_preprocessing.py --data_path ${{ env.DATA_PATH }} --output_path artifacts/processed_data --target_size ${{ env.TARGET_SIZE_W }} ${{ env.TARGET_SIZE_H }}
 
       - name: Train (epochs=3, models=cnn)
         run: |
