@@ -320,6 +320,9 @@ class DataValidator:
 
 
 # เพิ่มตัวช่วยแก้พาธข้อมูลให้ทนทานต่อ working directory
+
+
+
 def resolve_data_path(cand: str) -> Path:
     p = Path(cand)
     script_dir = Path(__file__).resolve().parent
