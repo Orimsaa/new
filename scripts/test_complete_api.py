@@ -4,8 +4,6 @@ Tests all endpoints including image prediction
 """
 
 import base64
-import json
-import os
 import time
 from pathlib import Path
 
@@ -151,12 +149,11 @@ def test_image_prediction():
                 predictions = result.get("predictions", [])
                 if predictions:
                     pred = predictions[0]
-                    print(
-                        f"   ✅ Predicted: {pred.get('class', 'N/A')} (confidence: {pred.get('confidence', 0):.3f})"
-                    )
+                    print(f"   ✅ Predicted: {pred.get('class', 'N/A')}")
+                    print(f"   Confidence: {pred.get('confidence', 0):.3f}")
                     success_count += 1
                 else:
-                    print(f"   ❌ No predictions returned")
+                    print("   ❌ No predictions returned")
             else:
                 print(
                     f"   ❌ Prediction failed: {response.status_code} - {response.text}"

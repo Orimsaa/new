@@ -4,15 +4,12 @@ This script validates the quality and integrity of image data.
 """
 
 import json
-import logging
-import os
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict
 
 import cv2
 import mlflow
 import numpy as np
-import pandas as pd
 from loguru import logger
 
 
@@ -79,7 +76,7 @@ class DataValidator:
                 validation_results["unexpected_directories"].append(item.name)
 
         logger.info(
-            f"Found {len(validation_results['expected_classes_found'])} expected classes"
+            f"Expected classes: {len(validation_results['expected_classes_found'])}"
         )
         logger.info(f"Total images: {validation_results['total_images']}")
 
@@ -235,14 +232,12 @@ class DataValidator:
         summary.append(f"Dataset Balanced: {results['balance']['balanced']}")
 
         if results["images"]["corrupted_images"]:
-            summary.append(
-                f"⚠️  Corrupted Images: {len(results['images']['corrupted_images'])}"
-            )
+            corrupted_count = len(results["images"]["corrupted_images"])
+            summary.append(f"⚠️  Corrupted Images: {corrupted_count}")
 
         if results["images"]["invalid_size_images"]:
-            summary.append(
-                f"⚠️  Invalid Size Images: {len(results['images']['invalid_size_images'])}"
-            )
+            invalid_count = len(results["images"]["invalid_size_images"])
+            summary.append(f"⚠️  Invalid Size Images: {invalid_count}")
 
         if results["balance"]["recommendations"]:
             summary.append("\n📋 Recommendations:")

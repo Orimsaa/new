@@ -4,7 +4,6 @@ Tests loading models and making predictions with actual images
 """
 
 import base64
-import json
 import os
 from pathlib import Path
 
@@ -22,7 +21,7 @@ def load_model(model_name):
         print(f"Status Code: {response.status_code}")
         if response.status_code == 200:
             result = response.json()
-            print(f"✅ Model loaded successfully!")
+            print("✅ Model loaded successfully!")
             print(f"Response: {result}")
             return True
         else:
@@ -76,9 +75,8 @@ def test_prediction_with_image(image_path, expected_category=None):
                 if prediction.lower() == expected_category.lower():
                     print(f"✅ Correct prediction! Expected: {expected_category}")
                 else:
-                    print(
-                        f"⚠️  Different prediction. Expected: {expected_category}, Got: {prediction}"
-                    )
+                    print("⚠️  Different prediction.")
+                    print(f"Expected: {expected_category}, Got: {prediction}")
 
             return True
         else:

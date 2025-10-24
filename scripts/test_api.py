@@ -4,8 +4,6 @@ Tests the FastAPI service with different scenarios
 """
 
 import base64
-import json
-import os
 import time
 from pathlib import Path
 
@@ -134,9 +132,8 @@ def test_image_prediction():
             print(f"❌ Prediction test failed for {category}: {e}")
 
     if success_count > 0:
-        print(
-            f"✅ Image prediction test passed! ({success_count}/{len(test_images)} successful)"
-        )
+        print("✅ Image prediction test passed!")
+        print(f"({success_count}/{len(test_images)}) successful")
         return True
     else:
         print("❌ All image prediction tests failed")

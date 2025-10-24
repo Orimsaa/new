@@ -6,7 +6,6 @@ This script provides a REST API for loading trained models and making prediction
 import base64
 import io
 import json
-import logging
 import os
 import pickle
 from datetime import datetime
@@ -14,19 +13,13 @@ from pathlib import Path
 from typing import Dict, List, Optional, Union
 
 import cv2
-import mlflow
-import mlflow.tensorflow
 import numpy as np
-import tensorflow as tf
 import uvicorn
-from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from loguru import logger
 from PIL import Image
 from pydantic import BaseModel
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.image import img_to_array
 
 # Configure logging
 logger.add("logs/model_serving.log", rotation="10 MB")
@@ -322,7 +315,7 @@ class WeatherClassificationAPI:
             processing_time = (datetime.now() - start_time).total_seconds()
 
             logger.info(
-                f"Batch prediction completed: {len(images)} images in {processing_time:.4f}s"
+                f"Batch done: {len(images)} in {processing_time:.4f}s"
             )
             return results
 
@@ -407,7 +400,7 @@ async def get_available_models():
 
 
 @app.post("/model/load/{model_name}")
-async def load_model(model_name: str):
+async def load_model_endpoint(model_name: str):
     """Load a specific model"""
     success = api_instance.load_model(model_name)
     if success:

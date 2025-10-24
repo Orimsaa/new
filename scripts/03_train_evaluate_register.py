@@ -1,21 +1,18 @@
 """
-Model Training, Evaluation, and Registration Script for Weather Classification MLOps Pipeline
-This script handles model training, evaluation, and registration with MLflow.
+Model Training, Evaluation, and Registration Script for Weather Classification MLOps.
+Handles training, evaluation, and MLflow registration.
 """
 
 import json
-import logging
-import os
 import pickle
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 
 import matplotlib.pyplot as plt
 import mlflow
 import mlflow.tensorflow
 import numpy as np
-import pandas as pd
 import seaborn as sns
 import tensorflow as tf
 from loguru import logger
@@ -32,7 +29,6 @@ from tensorflow.keras.layers import (
     Conv2D,
     Dense,
     Dropout,
-    Flatten,
     GlobalAveragePooling2D,
     MaxPooling2D,
 )
@@ -476,10 +472,12 @@ class WeatherClassificationTrainer:
                     )
 
             # Log model
+            model_type = model_config.get("model_type", "cnn")
+            model_registry_name = f"weather_classifier_{model_type}"
             mlflow.tensorflow.log_model(
                 model,
                 "model",
-                registered_model_name=f"weather_classifier_{model_config.get('model_type', 'cnn')}",
+                registered_model_name=model_registry_name,
             )
 
             # Log artifacts
@@ -555,7 +553,7 @@ class WeatherClassificationTrainer:
                 }
 
                 logger.info(
-                    f"Model {model_name} completed with accuracy: {evaluation_results['accuracy']:.4f}"
+                    f"Model {model_name} acc: {evaluation_results['accuracy']:.4f}"
                 )
 
             except Exception as e:
@@ -582,7 +580,7 @@ class WeatherClassificationTrainer:
                 json.dump(best_model_summary, f, indent=2)
 
             logger.success(
-                f"Training pipeline completed! Best model: {best_model['model_name']} (Accuracy: {best_accuracy:.4f})"
+                f"Best: {best_model['model_name']} Acc: {best_accuracy:.4f}"
             )
 
         return results
@@ -661,7 +659,7 @@ def main():
     )
 
     # Run training pipeline
-    results = trainer.run_training_pipeline(model_configs)
+    trainer.run_training_pipeline(model_configs)
 
     logger.success("Training pipeline completed successfully!")
 

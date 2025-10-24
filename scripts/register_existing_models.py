@@ -1,11 +1,8 @@
 """
-Quick Model Registration Script for Weather Classification MLOps Pipeline
-This script registers existing trained models in MLflow Model Registry without retraining.
+Register Existing Models with MLflow.
 """
 
 import json
-import os
-import pickle
 from pathlib import Path
 
 import mlflow
@@ -27,10 +24,6 @@ def register_existing_models():
     # Load metadata
     with open(processed_data_path / "metadata.json", "r") as f:
         metadata = json.load(f)
-
-    # Load label encoder
-    with open(processed_data_path / "label_encoder.pkl", "rb") as f:
-        label_encoder = pickle.load(f)
 
     # Find all model files
     model_files = list(models_path.glob("weather_classifier_*.h5"))
