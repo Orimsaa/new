@@ -2,7 +2,7 @@ name: MLflow Server Docker Build & Push
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, main ]
     paths:
       - 'Dockerfile.mlflow'
       - '.github/workflows/mlflow-build.yml'
