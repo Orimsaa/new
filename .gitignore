@@ -1,6 +1,5 @@
 # Large data files and artifacts
-artifacts/processed_data/
-artifacts/raw_data/
+artifacts/
 *.npy
 *.pkl
 *.h5
@@ -11,9 +10,7 @@ mlruns/
 mlflow.db
 
 # Model files
-models/*.h5
-models/*.pkl
-models/*.joblib
+models/
 
 # Python cache
 __pycache__/
