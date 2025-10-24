@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 
 import requests
+import pytest
 
 # API base URL
 BASE_URL = "http://127.0.0.1:8000"
@@ -19,53 +20,69 @@ def encode_image_to_base64(image_path):
         return base64.b64encode(image_file.read()).decode("utf-8")
 
 
+def is_server_up():
+    try:
+        r = requests.get(f"{BASE_URL}/health", timeout=2)
+        return r.status_code == 200
+    except requests.exceptions.RequestException:
+        return False
+
+
 def test_health_check():
     """Test health check endpoint"""
     print("🔍 Test 1: Health Check")
-    try:
-        response = requests.get(f"{BASE_URL}/health")
-        result = response.json()
-        print(f"   Status: {response.status_code}")
-        print(f"   Response: {result}")
-        return response.status_code == 200
-    except Exception as e:
-        print(f"   ❌ Error: {e}")
-        return False
+    if not is_server_up():
+        pytest.skip("API server not reachable")
+    response = requests.get(f"{BASE_URL}/health")
+    result = response.json()
+    print(f"   Status: {response.status_code}")
+    print(f"   Response: {result}")
+    assert response.status_code == 200
+    assert "status" in result
 
 
 def test_root_endpoint():
     """Test root endpoint"""
     print("\n🔍 Test 2: Root Endpoint")
-    try:
-        response = requests.get(f"{BASE_URL}/")
-        result = response.json()
-        print(f"   Status: {response.status_code}")
-        print(f"   Response: {result}")
-        return response.status_code == 200
-    except Exception as e:
-        print(f"   ❌ Error: {e}")
-        return False
+    if not is_server_up():
+        pytest.skip("API server not reachable")
+    response = requests.get(f"{BASE_URL}/")
+    result = response.json()
+    print(f"   Status: {response.status_code}")
+    print(f"   Response: {result}")
+    assert response.status_code == 200
+    assert result.get("status") == "running"
 
 
 def test_available_models():
     """Test available models endpoint"""
     print("\n🔍 Test 3: Available Models")
-    try:
-        response = requests.get(f"{BASE_URL}/models/available")
-        result = response.json()
-        print(f"   Status: {response.status_code}")
-        print(f"   Available Models: {result.get('available_models', [])}")
-        print(f"   Current Model: {result.get('current_model', 'none')}")
-        return response.status_code == 200, result.get("available_models", [])
-    except Exception as e:
-        print(f"   ❌ Error: {e}")
-        return False, []
+    if not is_server_up():
+        pytest.skip("API server not reachable")
+    response = requests.get(f"{BASE_URL}/models/available")
+    result = response.json()
+    print(f"   Status: {response.status_code}")
+    print(f"   Available Models: {result.get('available_models', [])}")
+    print(f"   Current Model: {result.get('current_model', 'none')}")
+    assert response.status_code == 200
+    assert isinstance(result.get("available_models", []), list)
 
 
-def test_model_loading(model_name):
-    """Test model loading endpoint"""
-    print(f"\n🔍 Test 4: Model Loading ({model_name})")
+def test_model_loading():
+    """Test model loading endpoint (robust for pytest)"""
+    import pytest
+    print("\n🔍 Test 4: Model Loading")
     try:
+        # Discover available models first
+        avail_resp = requests.get(f"{BASE_URL}/models/available")
+        if avail_resp.status_code != 200:
+            pytest.skip("API server reachable but /models/available not ready")
+        models = avail_resp.json().get("available_models", [])
+        if not models:
+            pytest.skip("No models available to load")
+        model_name = models[0]
+
+        # Attempt to load the model
         response = requests.post(f"{BASE_URL}/model/load/{model_name}")
         if response.status_code == 200:
             result = response.json()
@@ -74,36 +91,39 @@ def test_model_loading(model_name):
             model_info = result.get("model_info", {})
             print(f"   Classes: {model_info.get('classes', [])}")
             print(f"   Target Size: {model_info.get('target_size', [])}")
-            return True
+            assert response.status_code == 200
+            # removed return to avoid pytest warning
         else:
             print(f"   Status: {response.status_code}")
             print(f"   Error: {response.text}")
-            return False
+            assert False, "Model failed to load"
+    except requests.exceptions.RequestException:
+        pytest.skip("API server not reachable")
     except Exception as e:
         print(f"   ❌ Error: {e}")
-        return False
+        assert False, str(e)
 
 
 def test_model_info():
     """Test model info endpoint"""
     print("\n🔍 Test 5: Model Info")
-    try:
-        response = requests.get(f"{BASE_URL}/model/info")
-        result = response.json()
-        print(f"   Status: {response.status_code}")
-        print(f"   Model Loaded: {result.get('model_loaded', False)}")
-        print(f"   Classes: {result.get('classes', [])}")
-        print(f"   Target Size: {result.get('target_size', [])}")
-        print(f"   Number of Classes: {result.get('num_classes', 0)}")
-        return response.status_code == 200
-    except Exception as e:
-        print(f"   ❌ Error: {e}")
-        return False
+    if not is_server_up():
+        pytest.skip("API server not reachable")
+    response = requests.get(f"{BASE_URL}/model/info")
+    result = response.json()
+    print(f"   Status: {response.status_code}")
+    print(f"   Model Loaded: {result.get('model_loaded', False)}")
+    print(f"   Classes: {result.get('classes', [])}")
+    print(f"   Target Size: {result.get('target_size', [])}")
+    print(f"   Number of Classes: {result.get('num_classes', 0)}")
+    assert response.status_code == 200
 
 
 def test_image_prediction():
     """Test image prediction with sample images"""
     print("\n🔍 Test 6: Image Prediction")
+    if not is_server_up():
+        pytest.skip("API server not reachable")
 
     # Look for test images in data directory
     data_dir = Path("../data")
@@ -129,40 +149,27 @@ def test_image_prediction():
                 break
 
     if not test_images:
-        print("   ❌ No test images found")
-        return False
+        pytest.skip("No test images found in data/")
 
     success_count = 0
     for category, image_path in test_images:
         print(f"\n   Testing with {category} image: {image_path.name}")
-        try:
-            # Encode image to base64
-            image_base64 = encode_image_to_base64(image_path)
+        # Encode image to base64
+        image_base64 = encode_image_to_base64(image_path)
 
-            # Prepare request
-            payload = {"image": image_base64}
+        # Prepare request
+        payload = {"image": image_base64}
 
-            response = requests.post(f"{BASE_URL}/predict", json=payload)
+        response = requests.post(f"{BASE_URL}/predict", json=payload)
+        assert response.status_code == 200, response.text
 
-            if response.status_code == 200:
-                result = response.json()
-                predictions = result.get("predictions", [])
-                if predictions:
-                    pred = predictions[0]
-                    print(f"   ✅ Predicted: {pred.get('class', 'N/A')}")
-                    print(f"   Confidence: {pred.get('confidence', 0):.3f}")
-                    success_count += 1
-                else:
-                    print("   ❌ No predictions returned")
-            else:
-                print(
-                    f"   ❌ Prediction failed: {response.status_code} - {response.text}"
-                )
+        result = response.json()
+        pred = result.get("prediction", {})
+        assert "predicted_class" in pred
+        assert "confidence" in pred
+        success_count += 1
 
-        except Exception as e:
-            print(f"   ❌ Error: {e}")
-
-    return success_count > 0
+    assert success_count > 0
 
 
 def run_comprehensive_tests():
@@ -184,9 +191,8 @@ def run_comprehensive_tests():
 
     # Test 4: Model Loading
     if available_models:
-        # Try to load the first available model
-        first_model = available_models[0]
-        results["model_loading"] = test_model_loading(first_model)
+        # Try to load the first available model (handled inside test)
+        results["model_loading"] = test_model_loading()
 
         # Test 5: Model Info (after loading)
         if results["model_loading"]:

@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 
 import requests
+import pytest
 
 # API Configuration
 API_BASE_URL = "http://127.0.0.1:8000"
@@ -32,60 +33,53 @@ def load_model(model_name):
         return False
 
 
-def encode_image_to_base64(image_path):
-    """Helper function to encode image to base64"""
-    with open(image_path, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
-    return encoded_string
+def test_prediction_with_image():
+    """Test prediction with a specific image (pytest-friendly)"""
+    print("🖼️  Testing prediction with a sample image")
 
-
-def test_prediction_with_image(image_path, expected_category=None):
-    """Test prediction with a specific image"""
-    print(f"🖼️  Testing prediction with: {image_path}")
+    # Ensure API server is reachable
+    try:
+        health = requests.get(f"{API_BASE_URL}/health", timeout=3)
+        if health.status_code != 200:
+            pytest.skip("API server reachable but health check not ready")
+    except requests.exceptions.RequestException:
+        pytest.skip("API server not reachable")
 
     try:
+        # Locate an image under repository data
+        data_dir = Path("../../data")
+        if not data_dir.exists():
+            data_dir = Path("../data")
+
+        candidates = list(data_dir.rglob("*.jpg"))
+        if not candidates:
+            pytest.skip("No test images found in data/")
+        image_path = candidates[0]
+
         # Encode image to base64
-        image_base64 = encode_image_to_base64(image_path)
+        with open(image_path, "rb") as f:
+            image_base64 = base64.b64encode(f.read()).decode("utf-8")
 
-        # Prepare request data
-        request_data = {
-            "image_data": image_base64,
-            "filename": os.path.basename(image_path),
-        }
-
-        # Make prediction request
+        # Attempt a prediction using base64 endpoint
         response = requests.post(
-            f"{API_BASE_URL}/predict/single",
-            json=request_data,
+            f"{API_BASE_URL}/predict",
+            json={"image": image_base64},
             headers={"Content-Type": "application/json"},
         )
 
         print(f"Status Code: {response.status_code}")
-        if response.status_code == 200:
-            result = response.json()
-            prediction = result.get("prediction", "N/A")
-            confidence = result.get("confidence", "N/A")
-            processing_time = result.get("processing_time", "N/A")
+        assert response.status_code == 200, response.text
 
-            print(f"✅ Prediction: {prediction}")
-            print(f"   Confidence: {confidence}")
-            print(f"   Processing Time: {processing_time}s")
-
-            if expected_category:
-                if prediction.lower() == expected_category.lower():
-                    print(f"✅ Correct prediction! Expected: {expected_category}")
-                else:
-                    print("⚠️  Different prediction.")
-                    print(f"Expected: {expected_category}, Got: {prediction}")
-
-            return True
-        else:
-            print(f"❌ Prediction failed: {response.text}")
-            return False
+        result = response.json()
+        pred = result.get("prediction", {})
+        assert "predicted_class" in pred
+        assert "confidence" in pred
+        print(f"✅ Predicted: {pred.get('predicted_class')} (conf: {pred.get('confidence')})")
+        # success path relies on asserts above; no return needed
 
     except Exception as e:
         print(f"❌ Error during prediction: {e}")
-        return False
+        assert False, str(e)
 
 
 def main():
