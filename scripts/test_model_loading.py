@@ -4,7 +4,7 @@ Tests loading models and making predictions with actual images
 """
 
 import base64
-import os
+
 from pathlib import Path
 
 import requests
