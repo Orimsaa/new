@@ -40,11 +40,11 @@ mlflow ui
 ## Docker
 Image ถูก build/push ไปที่ GitHub Container Registry:
 ```
-ghcr.io/Orimsaa/weather-classification-mlops:latest
+ghcr.io/orimsaa/weather-classification-mlops:latest
 ```
 รันด้วย:
 ```bash
-docker run -p 8000:8000 ghcr.io/Orimsaa/weather-classification-mlops:latest
+docker run -p 8000:8000 ghcr.io/orimsaa/weather-classification-mlops:latest
 ```
 
 ---
