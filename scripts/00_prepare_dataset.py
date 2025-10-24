@@ -5,7 +5,7 @@ cloudy, foggy, rainy, snowy, sunny. Each class gets N images.
 """
 
 from pathlib import Path
-from typing import List, Tuple
+from typing import Tuple
 import argparse
 import random
 

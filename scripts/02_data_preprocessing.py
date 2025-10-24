@@ -106,7 +106,12 @@ def main():
 
     parser = argparse.ArgumentParser(description="Data Preprocessing for Weather Classification")
     parser.add_argument("--data_path", type=str, default="../../data", help="Path to raw data")
-    parser.add_argument("--output_path", type=str, default="../artifacts/processed_data", help="Output path for processed data")
+    parser.add_argument(
+        "--output_path",
+        type=str,
+        default="../artifacts/processed_data",
+        help="Output path for processed data",
+    )
     parser.add_argument("--target_size", nargs=2, type=int, default=[128, 128], help="Target image size W H")
     parser.add_argument("--val_split", type=float, default=0.1, help="Validation split ratio")
     parser.add_argument("--test_split", type=float, default=0.2, help="Test split ratio")
@@ -145,7 +150,11 @@ def main():
         X_train, X_tmp, y_train, y_tmp = train_test_split(
             X, y, test_size=args.val_split + args.test_split, random_state=42, stratify=y
         )
-        relative_test = args.test_split / (args.val_split + args.test_split) if (args.val_split + args.test_split) > 0 else 0.0
+        relative_test = (
+            args.test_split / (args.val_split + args.test_split)
+            if (args.val_split + args.test_split) > 0
+            else 0.0
+        )
         X_val, X_test, y_val, y_test = train_test_split(
             X_tmp, y_tmp, test_size=relative_test, random_state=42, stratify=y_tmp
         )
