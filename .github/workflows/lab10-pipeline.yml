@@ -1,0 +1,47 @@
+name: Lab10 Pipeline (No Docker)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  lab10:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r weather_classification_mlops/requirements.txt
+
+      - name: Run Data Validation
+        run: |
+          python scripts/01_data_validation.py --data_path ../../data --output_path ../artifacts
+        working-directory: weather_classification_mlops
+
+      - name: Run Data Preprocessing
+        id: preprocessing
+        run: |
+          python scripts/02_data_preprocessing.py --data_path ../../data --output_path ../artifacts/processed_data --target_size 128 128
+        working-directory: weather_classification_mlops
+
+      - name: Run Training and Registration (disabled)
+        if: ${{ false }}
+        run: |
+          python scripts/03_train_evaluate_register.py --processed_data_path ../artifacts/processed_data --models_path ../models --artifacts_path ../artifacts --experiment_name weather_classification
+        working-directory: weather_classification_mlops
+
+      - name: Upload MLflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlflow-artifacts
+          path: weather_classification_mlops/mlruns/
+          if-no-files-found: warn
